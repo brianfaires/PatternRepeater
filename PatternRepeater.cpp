@@ -106,13 +106,10 @@ bool PatternRepeater::IsReadyForColorMove(uint32_t curTime) {
   return curTime - lastColorMove >= stepSize;
 }
 
-void PatternRepeater::SetCRGBs(CRGB* target, uint16_t numLEDs) {
+void PatternRepeater::SetCRGBs(CRGB* target, uint8_t* target_b, uint16_t numLEDs) {
   uint16_t curColorIndex = colorIndexFirst;
   uint16_t curDimIndex = dimIndexFirst;
 
-//static uint8_t tempHue = curHue;
-//bool doIt = false;
-//if(tempHue != curHue) { tempHue = curHue; doIt = true; }
   CRGB tempA, tempB;
   for(uint16_t i = 0; i < numLEDs; i++) {
     // Blend using CRGB to avoid jumping directions around the color wheel
@@ -123,22 +120,9 @@ void PatternRepeater::SetCRGBs(CRGB* target, uint16_t numLEDs) {
     Gamma->Inverse(tempB);
     target[i] = blend(tempA, tempB, colorPattern[curColorIndex].blendAmount);
 
-//target[i] = CHSV(curHue, 255, 255);
-//Gamma->Inverse(target[i]);
-//CRGB tempB = target[i];
 	if(dimPattern[curDimIndex] == 0) { target[i] = CRGB::Black; }
-    else { Gamma->SetPixel(target[i], max(1, dimPattern[curDimIndex] * myBrightness / 255)); }//debug: += 127?
+    else { Gamma->SetPixel(target[i], target_b[i], max(1, dimPattern[curDimIndex] * myBrightness / 255)); }//debug: += 127?
 
-/*
-if(doIt && i >= 10 && i <= 14) {
-	Serial.print(String(tempB.r) + "," + String(tempB.g) + "," + String(tempB.b));
-	Gamma->Correct(tempB);
-	Serial.print(" -> " + String(tempB.r) + "," + String(tempB.g) + "," + String(tempB.b) + "(" + String((uint8_t)(dimPattern[curDimIndex] * myBrightness / 255)) + ")");
-	Serial.print(" -> " + String(target[i].r) + "," + String(target[i].g) + "," + String(target[i].b) + "\n");
-	if(i == 14) { Serial.println(); }
-}*/
-
-    
     #ifdef DEBUG_ERRORS
       if(curDimIndex >= dimPeriod) { Serial.println("ERROR: SetCRGBs(): curDimIndex out of bounds: " + 
       String(curDimIndex) + " / " + String(dimPeriod)); }
@@ -146,16 +130,8 @@ if(doIt && i >= 10 && i <= 14) {
       String(curColorIndex) + " / " + String(colorPeriod)); }
     #endif
 
-    //Serial.println(String(i) + ": " + String(colorPattern[curColorIndex].a) + ", "  + String(colorPattern[curColorIndex].b) + ", "  + String(colorPattern[curColorIndex].blendAmount));
-    
     if(++curColorIndex == colorPeriod) { curColorIndex = 0; }
     if(++curDimIndex == dimPeriod) { curDimIndex = 0; }
   }
-/*
-  Serial.println("SetCRGBs(): ");
-  for(uint8_t ii = 0; ii < numLEDs; ii++) {
-    Serial.print(String(ii) + " = " + String(dimPattern[ii % dimPeriod]) + "\t");
-    Serial.println(String(target[ii].b));
-  }*/
 }
 

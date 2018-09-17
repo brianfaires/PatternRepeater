@@ -11,7 +11,7 @@
 class PatternRepeater {
   public:
     PatternRepeater();
-    virtual void SetCRGBs(CRGB* target, uint16_t numLEDs);
+    virtual void SetCRGBs(CRGB* target, uint8_t* target_b, uint16_t numLEDs);
     virtual void SetColorPattern(PRGB* newPattern, uint16_t newColorPeriod);
     virtual void SetDimPattern(uint8_t* newPattern, uint16_t newDimPeriod);
     virtual void Init(PaletteManager* _pm, GammaManager* gm, uint32_t curTime);
