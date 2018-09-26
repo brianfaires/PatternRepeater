@@ -120,8 +120,12 @@ void PatternRepeater::SetCRGBs(CRGB* target, uint8_t* target_b, uint16_t numLEDs
     Gamma->Inverse(tempB);
     target[i] = blend(tempA, tempB, colorPattern[curColorIndex].blendAmount);
 
-	if(dimPattern[curDimIndex] == 0) { target[i] = CRGB::Black; }
-    else { Gamma->SetPixel(target[i], target_b[i], max(1, dimPattern[curDimIndex] * myBrightness / 255)); }//debug: += 127?
+	if(dimPattern[curDimIndex] == 0) { target_b[i] = 0; }
+    else {
+		Gamma->Correct(target[i]);
+		uint16_t brightness = (uint16_t)dimPattern[curDimIndex] * (uint16_t)(myBrightness+1) / 0x100;
+		target_b[i] = max(1, brightness & 0xFF); //debug: += 127?
+	}
 
     #ifdef DEBUG_ERRORS
       if(curDimIndex >= dimPeriod) { Serial.println("ERROR: SetCRGBs(): curDimIndex out of bounds: " + 
