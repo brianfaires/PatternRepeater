@@ -1,12 +1,8 @@
-#ifndef PATTERN_REPEATER_H
-#define PATTERN_REPEATER_H
+#pragma once
 
-#include "Arduino.h"
-#include "FastLED.h"
 #include "PatternCommon.h"
 #include "PaletteManager.h"
 #include "GammaManager.h"
-#include "ArduinoTrace.h"
 
 
 class PatternRepeater {
@@ -36,5 +32,3 @@ class PatternRepeater {
     uint8_t dimPeriod;
     uint8_t dimIndexFirst;
 };
-
-#endif

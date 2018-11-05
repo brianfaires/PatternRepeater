@@ -74,12 +74,8 @@ void PatternRepeater::SetCRGBs(CRGB* target, uint8_t* target_b, uint16_t numLEDs
 		target_b[i] = max(1, brightness & 0xFF); //debug: += 127?
 	}
 
-    #ifdef DEBUG_ERRORS
-      if(curDimIndex >= dimPeriod) { Serial.println("ERROR: SetCRGBs(): curDimIndex out of bounds: " + 
-      String(curDimIndex) + " / " + String(dimPeriod)); }
-      if(curColorIndex >= colorPeriod) { Serial.println("ERROR: SetCRGBs(): curColorIndex out of bounds: " + 
-      String(curColorIndex) + " / " + String(colorPeriod)); }
-    #endif
+      if(curDimIndex >= dimPeriod) { THROW("ERROR: SetCRGBs(): curDimIndex out of bounds: " + String(curDimIndex) + " / " + String(dimPeriod)) }
+      if(curColorIndex >= colorPeriod) { THROW("ERROR: SetCRGBs(): curColorIndex out of bounds: " + String(curColorIndex) + " / " + String(colorPeriod)) }
 
     if(++curColorIndex == colorPeriod) { curColorIndex = 0; }
     if(++curDimIndex == dimPeriod) { curDimIndex = 0; }
