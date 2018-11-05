@@ -4,27 +4,23 @@ PatternRepeater::PatternRepeater() {
   colorPeriod = 1;
   colorPattern[0] = { 0, 0, 0 };
   colorIndexFirst = 0;
-  lastColorMove = 0;
-  colorSpeed = 0;
   
   dimPeriod = 1;
   dimPattern[0] = 255;
   dimIndexFirst = 0;
-  lastDimMove = 0;
-  dimSpeed = 0;
   
   myBrightness = 255;
 }
 
-void PatternRepeater::SkipTime(uint32_t amount) {
-  lastColorMove += amount;
-  lastDimMove += amount;
-}
+uint16_t PatternRepeater::GetDimIndexFirst() { return dimIndexFirst; }
+uint16_t PatternRepeater::GetColorIndexFirst() { return colorIndexFirst; }
 
-void PatternRepeater::SetColorPattern(PRGB* newPattern, uint16_t newColorPeriod) {
-  if(colorPeriod != newColorPeriod) { colorIndexFirst = 0; }
-  colorPeriod = newColorPeriod;
-  memcpy(colorPattern, newPattern, sizeof(PRGB)*colorPeriod);
+void PatternRepeater::Init(PaletteManager* _pm, GammaManager* gm) {
+  if(gm != NULL)  { Gamma = gm; }
+  if(_pm != NULL) { pm = _pm; }
+  
+  colorIndexFirst = 0;
+  dimIndexFirst = 0;
 }
 
 void PatternRepeater::SetDimPattern(uint8_t* newPattern, uint16_t newDimPeriod) {
@@ -33,77 +29,28 @@ void PatternRepeater::SetDimPattern(uint8_t* newPattern, uint16_t newDimPeriod) 
   memcpy(dimPattern, newPattern, dimPeriod);
 }
 
-void PatternRepeater::Init(PaletteManager* _pm, GammaManager* gm, uint32_t curTime) {
-  Gamma = gm;
-  pm = _pm;
-  
-  colorIndexFirst = 0;
-  dimIndexFirst = 0;
-  
-  lastDimMove = curTime;
-  lastColorMove = curTime;
-}
-
-void PatternRepeater::Update(uint32_t curTime) {
-  // Move brightness pattern
-  if(dimSpeed == 0) {
-    lastDimMove = curTime;
-  }
-  else {
-    uint32_t stepSize = ONE_SECOND / abs(dimSpeed);
-    if(curTime - lastDimMove >= stepSize) {
-      ScrollDimPattern(dimSpeed > 0);
-      lastDimMove += ONE_SECOND / abs(dimSpeed);
-    }
-  }
-
-  // Move color pattern
-  if(colorSpeed == 0) {
-    lastColorMove = curTime;
-  }
-  else {
-    uint32_t stepSize = ONE_SECOND / abs(colorSpeed);
-    if(curTime - lastColorMove >= stepSize) {
-      ScrollColorPattern(colorSpeed > 0);
-      lastColorMove += ONE_SECOND / abs(colorSpeed);
-    }
-  }
-}
-uint8_t curHue = 0;
-void PatternRepeater::ScrollColorPattern(bool scrollForward) {
-  if(scrollForward) {
-	  curHue++;
-    if(--colorIndexFirst == 0xFFFF) { colorIndexFirst = colorPeriod - 1; }
-  }
-  else {
-	  curHue--;
-    if(++colorIndexFirst == colorPeriod) { colorIndexFirst = 0; }
-  }
+void PatternRepeater::SetColorPattern(PRGB* newPattern, uint16_t newColorPeriod) {
+  if(colorPeriod != newColorPeriod) { colorIndexFirst = 0; }
+  colorPeriod = newColorPeriod;
+  memcpy(colorPattern, newPattern, sizeof(PRGB)*colorPeriod);
 }
 
 void PatternRepeater::ScrollDimPattern(bool scrollForward) {
   if(scrollForward) {
-    if(--dimIndexFirst == 0xFFFF) { dimIndexFirst = dimPeriod - 1; }
+    if(--dimIndexFirst == 0xFF) { dimIndexFirst = dimPeriod - 1; }
   }
   else {
     if(++dimIndexFirst == dimPeriod) { dimIndexFirst = 0; }
   }
 }
 
-bool PatternRepeater::IsReadyForDimMove(uint32_t curTime) {
-  // Returns true if this cycle is going to move the pattern (i.e. only change pattern on the same draw cycle as a move)
-  if(dimSpeed == 0) { return true; }
-  
-  uint32_t stepSize = ONE_SECOND / abs(dimSpeed);
-  return curTime - lastDimMove >= stepSize;
-}
-
-bool PatternRepeater::IsReadyForColorMove(uint32_t curTime) {
-  // Returns true if this cycle is going to move the pattern (i.e. only change pattern on the same draw cycle as a move)
-  if(colorSpeed == 0) { return true; }
-  
-  uint32_t stepSize = ONE_SECOND / abs(colorSpeed);
-  return curTime - lastColorMove >= stepSize;
+void PatternRepeater::ScrollColorPattern(bool scrollForward) {
+  if(scrollForward) {
+    if(--colorIndexFirst == 0xFF) { colorIndexFirst = colorPeriod - 1; }
+  }
+  else {
+    if(++colorIndexFirst == colorPeriod) { colorIndexFirst = 0; }
+  }
 }
 
 void PatternRepeater::SetCRGBs(CRGB* target, uint8_t* target_b, uint16_t numLEDs) {
